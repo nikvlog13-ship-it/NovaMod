@@ -10,7 +10,7 @@
 
 ## Установка
 
-Установите .dll и .pdb файлы в папку ``Hollow Knight_Data/Managed/Mods/NovaMod``. Не забудьте установить Lumafly.
+Установите ``.dll`` и ``.pdb`` файлы в папку ``Hollow Knight_Data/Managed/Mods/NovaMod``. Не забудьте установить Lumafly.
 
 ## История версий
 
