@@ -1,15 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Modding;
 using UnityEngine;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace NovaMod
 {
     public class NovaMod : Mod
     {
-        public override string GetVersion() => "Beta 1.1.0";
+        public override string GetVersion() => "Beta 1.1.1";
 
         private GameObject _uiObject;
 
@@ -18,7 +17,7 @@ namespace NovaMod
             _uiObject = new GameObject("CompletionCheckUI");
             _uiObject.AddComponent<CompletionCheckGUI>();
             UnityEngine.Object.DontDestroyOnLoad(_uiObject);
-            Modding.Logger.Log("112% Tracker (correct percentage) loaded. Press F5 to show/hide, F6 to switch language.");
+            Modding.Logger.Log("112% Tracker (modes 1/2/3) loaded. Press F5 to show/hide, 1-3 to switch mode, F6 to change language.");
         }
 
         public void Unload()
@@ -31,6 +30,7 @@ namespace NovaMod
     public class CompletionCheckGUI : MonoBehaviour
     {
         private bool _showUI = false;
+        private int _currentMode = 1;           // 1 = 112%, 2 = True Ending, 3 = 112+%
         private List<string> _missingItems = new List<string>();
         private Vector2 _scrollPos;
         private float _completionPercentage = -1f;
@@ -43,6 +43,7 @@ namespace NovaMod
 
         public void OnGUI()
         {
+            // Переключение видимости и смена языка (работают всегда)
             if (Event.current != null &&
                 Event.current.type == EventType.KeyDown &&
                 Event.current.keyCode == KeyCode.F5)
@@ -59,20 +60,56 @@ namespace NovaMod
                 if (_showUI) RefreshData();
             }
 
+            // Переключение режимов (только когда UI открыт)
+            if (_showUI && Event.current != null && Event.current.type == EventType.KeyDown)
+            {
+                int newMode = -1;
+                if (Event.current.keyCode == KeyCode.Alpha1 || Event.current.keyCode == KeyCode.Keypad1) newMode = 1;
+                if (Event.current.keyCode == KeyCode.Alpha2 || Event.current.keyCode == KeyCode.Keypad2) newMode = 2;
+                if (Event.current.keyCode == KeyCode.Alpha3 || Event.current.keyCode == KeyCode.Keypad3) newMode = 3;
+
+                if (newMode != -1 && newMode != _currentMode)
+                {
+                    _currentMode = newMode;
+                    _scrollPos = Vector2.zero;
+                    RefreshData();
+                }
+            }
+
             if (!_showUI) return;
 
+            // Отрисовка
             GUI.backgroundColor = Color.black;
             Rect windowRect = new Rect(50, 50, 400, 600);
-            GUI.Box(windowRect, T("ЧЕК-ЛИСТ 112%", "112% CHECKLIST"));
 
-            GUI.Label(new Rect(70, 80, 350, 20), T("F6: язык", "F6: language"));
+            string title;
+            switch (_currentMode)
+            {
+                case 1:
+                    title = T("ЧЕК-ЛИСТ 112%", "112% CHECKLIST");
+                    break;
+                case 2:
+                    title = T("ЧЕК-ЛИСТ TRUE ENDING", "TRUE ENDING CHECKLIST");
+                    break;
+                case 3:
+                    title = T("ЧЕК-ЛИСТ 112+%", "112+% CHECKLIST");
+                    break;
+                default:
+                    title = T("ЧЕК-ЛИСТ", "CHECKLIST");
+                    break;
+            }
+            GUI.Box(windowRect, title);
+
+            GUI.Label(new Rect(70, 80, 350, 20), T("F6: язык | 1/2/3: режим", "F6: language | 1/2/3: mode"));
             GUI.Label(new Rect(70, 100, 350, 40), _statusMessage);
 
-            if (_missingItems.Count == 0 && _completionPercentage >= 112f)
+            if (_missingItems.Count == 0 && _completionPercentage >= 112f && _currentMode == 1)
             {
                 GUI.Label(new Rect(70, 150, 350, 30), T("Поздравляем! Все 112% собраны.", "Congratulations! All 112% completed."));
                 return;
             }
+            if (_missingItems.Count == 0 && _completionPercentage < 0)
+                return;
 
             _scrollPos = GUI.BeginScrollView(
                 new Rect(70, 120, 350, 450),
@@ -105,14 +142,26 @@ namespace NovaMod
             if (_completionPercentage < 0)
                 _statusMessage += " " + T("(ошибка чтения)", "(read error)");
 
-            _missingItems = GetMissingElements(pd);
+            _missingItems = GetMissingItemsForMode(pd, _currentMode);
         }
 
-        private List<string> GetMissingElements(PlayerData pd)
+        private List<string> GetMissingItemsForMode(PlayerData pd, int mode)
+        {
+            switch (mode)
+            {
+                case 1: return GetMissing112(pd);
+                case 2: return GetMissingTrueEnding(pd);
+                case 3: return GetMissing112Plus(pd);
+                default: return new List<string> { T("Неизвестный режим", "Unknown mode") };
+            }
+        }
+
+        // ===================== РЕЖИМ 1: 112% =====================
+        private List<string> GetMissing112(PlayerData pd)
         {
             List<string> missing = new List<string>();
 
-            // Боссы / Bosses
+            // Боссы
             missing.Add(T("Боссы:", "Bosses:"));
             if (!ReadBoolField(pd, "killedBigBuzzer")) missing.Add(T("Убить Матку Жужж", "Kill Gruz Mother"));
             if (!ReadBoolField(pd, "killedFalseKnight")) missing.Add(T("Убить Ложного Рыцаря", "Kill False Knight"));
@@ -130,47 +179,18 @@ namespace NovaMod
             if (!ReadBoolField(pd, "killedBlackKnight")) missing.Add(T("Убить Рыцарей Хранителей", "Kill Watcher Knights"));
             missing.Add("");
 
-            // Амулеты / Charms
+            // Амулеты (1-36)
             missing.Add(T("Амулеты:", "Charms:"));
-            if (!ReadBoolField(pd, "gotCharm_1")) missing.Add(T("Получить Загребущий рой", "Collect Gathering Swarm"));
-            if (!ReadBoolField(pd, "gotCharm_2")) missing.Add(T("Получить Капризный компас", "Collect Wayward Compass"));
-            if (!ReadBoolField(pd, "gotCharm_3")) missing.Add(T("Получить Песнь гусеничек", "Collect Grubsong"));
-            if (!ReadBoolField(pd, "gotCharm_4")) missing.Add(T("Получить Крепкий панцирь", "Collect Stalwart Shell"));
-            if (!ReadBoolField(pd, "gotCharm_5")) missing.Add(T("Получить Панцирь бальдра", "Collect Baldur Shell"));
-            if (!ReadBoolField(pd, "gotCharm_6")) missing.Add(T("Получить Ярость павшего", "Collect Fury of the Fallen"));
-            if (!ReadBoolField(pd, "gotCharm_7")) missing.Add(T("Получить Быстрый фокус", "Collect Quick Focus"));
-            if (!ReadBoolField(pd, "gotCharm_8")) missing.Add(T("Получить Живительное сердце", "Collect Lifeblood Heart"));
-            if (!ReadBoolField(pd, "gotCharm_9")) missing.Add(T("Получить Живительное ядро", "Collect Lifeblood Core"));
-            if (!ReadBoolField(pd, "gotCharm_10")) missing.Add(T("Получить Герб защитника", "Collect Defender's Crest"));
-            if (!ReadBoolField(pd, "gotCharm_11")) missing.Add(T("Получить Тремогнездо", "Collect Glowing Womb"));
-            if (!ReadBoolField(pd, "gotCharm_12")) missing.Add(T("Получить Колючки страданий", "Collect Thorns of Agony"));
-            if (!ReadBoolField(pd, "gotCharm_13")) missing.Add(T("Получить Метку гордости", "Collect Mark of Pride"));
-            if (!ReadBoolField(pd, "gotCharm_14")) missing.Add(T("Получить Непоколибимое тело", "Collect Steady Body"));
-            if (!ReadBoolField(pd, "gotCharm_15")) missing.Add(T("Получить Тяжёлый выпад", "Collect Heavy Blow"));
-            if (!ReadBoolField(pd, "gotCharm_16")) missing.Add(T("Получить Пронизывающую тень", "Collect Sharp Shadow"));
-            if (!ReadBoolField(pd, "gotCharm_17")) missing.Add(T("Получить Споровый гриб", "Collect Spore Shroom"));
-            if (!ReadBoolField(pd, "gotCharm_18")) missing.Add(T("Получить Длинный гвоздь", "Collect Longnail"));
-            if (!ReadBoolField(pd, "gotCharm_19")) missing.Add(T("Получить Шаманский камень", "Collect Shaman Stone"));
-            if (!ReadBoolField(pd, "gotCharm_20")) missing.Add(T("Получить Ловца душ", "Collect Soul Catcher"));
-            if (!ReadBoolField(pd, "gotCharm_21")) missing.Add(T("Получить Пожирателя душ", "Collect Soul Eater"));
-            if (!ReadBoolField(pd, "gotCharm_22")) missing.Add(T("Получить Пылающее чрево", "Collect Flukenest"));
-            if (!ReadBoolField(pd, "gotCharm_23")) missing.Add(T("Получить Хрупкое сердце", "Collect Fragile Heart"));
-            if (!ReadBoolField(pd, "gotCharm_24")) missing.Add(T("Получить Хрупкую жадность", "Collect Fragile Greed"));
-            if (!ReadBoolField(pd, "gotCharm_25")) missing.Add(T("Получить Хрупкую силу", "Collect Fragile Strength"));
-            if (!ReadBoolField(pd, "gotCharm_26")) missing.Add(T("Получить Ореол мастера гвоздя", "Collect Nailmaster's Glory"));
-            if (!ReadBoolField(pd, "gotCharm_27")) missing.Add(T("Получить Благословение Джони", "Collect Joni's Blessing"));
-            if (!ReadBoolField(pd, "gotCharm_28")) missing.Add(T("Получить Облик Унн", "Collect Shape of Unn"));
-            if (!ReadBoolField(pd, "gotCharm_29")) missing.Add(T("Получить Кровь Улья", "Collect Hiveblood"));
-            if (!ReadBoolField(pd, "gotCharm_30")) missing.Add(T("Получить Повелителя грёз", "Collect Dream Wielder"));
-            if (!ReadBoolField(pd, "gotCharm_31")) missing.Add(T("Получить Трюкача", "Collect Dashmaster"));
-            if (!ReadBoolField(pd, "gotCharm_32")) missing.Add(T("Получить Быстрый удар", "Collect Quick Slash"));
-            if (!ReadBoolField(pd, "gotCharm_33")) missing.Add(T("Получить Искажатель заклинаний", "Collect Spell Twister"));
-            if (!ReadBoolField(pd, "gotCharm_34")) missing.Add(T("Получить Глубокий фокус", "Collect Deep Focus"));
-            if (!ReadBoolField(pd, "gotCharm_35")) missing.Add(T("Получить Элегию куколки", "Collect Grubberfly's Elegy"));
-            if (!ReadBoolField(pd, "gotCharm_36")) missing.Add(T("Получить Душу короля", "Collect Kingsoul"));
+            for (int i = 1; i <= 36; i++)
+            {
+                if (!ReadBoolField(pd, "gotCharm_" + i))
+                {
+                    missing.Add(T($"Получить {GetCharmNameRu(i)}", $"Collect {GetCharmNameEn(i)}"));
+                }
+            }
             missing.Add("");
 
-            // Способности / Abilities
+            // Способности
             missing.Add(T("Способности:", "Abilities:"));
             if (!ReadBoolField(pd, "hasDash")) missing.Add(T("Получить Накидку мотылька", "Obtain Mothwing Cloak"));
             if (!ReadBoolField(pd, "hasWalljump")) missing.Add(T("Получить Клещню богомола", "Obtain Mantis Claw"));
@@ -181,20 +201,20 @@ namespace NovaMod
             if (!ReadBoolField(pd, "hasShadowDash")) missing.Add(T("Получить Теневой плащ", "Obtain Shade Cloak"));
             missing.Add("");
 
-            // Гвоздь / Nail
+            // Гвоздь
             missing.Add(T("Гвоздь:", "Nail:"));
             int nail = ReadIntField(pd, "nailSmithUpgrades");
             if (nail < 4) missing.Add(T($"Гвоздь улучшен {nail}/4", $"Nail upgraded {nail}/4"));
             missing.Add("");
 
-            // Техники гвоздя / Nail Arts
+            // Техники гвоздя
             missing.Add(T("Техники гвоздя:", "Nail Arts:"));
             if (!ReadBoolField(pd, "hasUpwardSlash")) missing.Add(T("Выучить Великий удар", "Learn Great Slash"));
             if (!ReadBoolField(pd, "hasDashSlash")) missing.Add(T("Выучить Рассекающий удар", "Learn Dash Slash"));
             if (!ReadBoolField(pd, "hasCyclone")) missing.Add(T("Выучить Ураганный удар", "Learn Cyclone Slash"));
             missing.Add("");
 
-            // Заклинания / Spells
+            // Заклинания
             missing.Add(T("Заклинания:", "Spells:"));
             if (ReadIntField(pd, "fireballLevel") < 1) missing.Add(T("Мстительный дух", "Vengeful Spirit"));
             if (ReadIntField(pd, "fireballLevel") < 2) missing.Add(T("Теневая душа", "Shade Soul"));
@@ -204,11 +224,9 @@ namespace NovaMod
             if (ReadIntField(pd, "screamLevel") < 2) missing.Add(T("Вопль бездны", "Abyss Shriek"));
             missing.Add("");
 
-            // Маски / Masks
+            // Маски / Сосуды
             int health = ReadIntField(pd, "maxHealth");
             if (health < 9) missing.Add(T($"Маски: {health}/9", $"Masks: {health}/9"));
-
-            // Сосуды души / Soul Vessels
             int soulFrags = ReadIntField(pd, "MPReserveMax");
             if (soulFrags > 0 && soulFrags < 99)
                 missing.Add(T($"Сосуды души: {soulFrags / 33}/3 колб", $"Soul Vessels: {soulFrags / 33}/3"));
@@ -216,14 +234,14 @@ namespace NovaMod
                 missing.Add(T("Нет ни одной колбы", "No soul vessels"));
             missing.Add("");
 
-            // Гвоздь Грёз / Dream Nail
+            // Гвоздь Грёз
             missing.Add(T("Гвоздь грёз:", "Dream Nail:"));
             if (!ReadBoolField(pd, "hasDreamNail")) missing.Add(T("Получить Гвоздь Грёз", "Obtain Dream Nail"));
             if (!ReadBoolField(pd, "dreamNailUpgraded")) missing.Add(T("Улучшить Гвоздь Грёз", "Upgrade Dream Nail"));
             if (!ReadBoolField(pd, "mothDeparted")) missing.Add(T("Последние слова Провидицы", "Seer's final words"));
             missing.Add("");
 
-            // Воины Грёз / Dream Warriors
+            // Воины Грёз
             missing.Add(T("Воины грёз:", "Dream Warriors:"));
             if (!ReadBoolField(pd, "killedGhostAladar")) missing.Add(T("Убить Горба", "Defeat Gorb"));
             if (!ReadBoolField(pd, "killedGhostXero")) missing.Add(T("Убить Ксеро", "Defeat Xero"));
@@ -234,18 +252,18 @@ namespace NovaMod
             if (!ReadBoolField(pd, "killedGhostMarkoth")) missing.Add(T("Убить Маркота", "Defeat Markoth"));
             missing.Add("");
 
-            // Грезящие / Dreamers
+            // Грезящие
             missing.Add(T("Грезящие:", "Dreamers:"));
             if (!ReadBoolField(pd, "lurienDefeated")) missing.Add(T("Убить Лурьена", "Defeat Lurien"));
             if (!ReadBoolField(pd, "monomonDefeated")) missing.Add(T("Убить Мономону", "Defeat Monomon"));
             if (!ReadBoolField(pd, "hegemolDefeated")) missing.Add(T("Убить Хегемоля", "Defeat Herrah"));
             missing.Add("");
 
-            // Колизей / Coliseum
+            // Колизей
             if (!ReadBoolField(pd, "colosseumTrial3")) missing.Add(T("Испытание Глупца", "Trial of the Fool"));
             missing.Add("");
 
-            // Труппа Гримма / Grimm Troupe
+            // Гримм
             missing.Add(T("Гримм:", "Grimm:"));
             if (!ReadBoolField(pd, "gotCharm_37")) missing.Add(T("Получить Ловкача", "Collect Grimmchild"));
             if (!ReadBoolField(pd, "gotCharm_38")) missing.Add(T("Получить Щит Грёз", "Collect Dreamshield"));
@@ -255,7 +273,7 @@ namespace NovaMod
             if (!ReadBoolField(pd, "defeatedNightmareGrimm")) missing.Add(T("Завершить ритуал Гримма или изгнать труппу", "Complete Grimm ritual or banish"));
             missing.Add("");
 
-            // Улей и Божий кров / Hive & Godhome
+            // Улей и Божий кров
             missing.Add(T("Улей и Божий кров:", "Hive & Godhome:"));
             if (!ReadBoolField(pd, "killedHiveKnight")) missing.Add(T("Убить Рыцаря улья", "Defeat Hive Knight"));
             if (!ReadBoolField(pd, "godseekerUnlocked")) missing.Add(T("Разблокировать Божий кров", "Unlock Godhome"));
@@ -278,7 +296,117 @@ namespace NovaMod
             return missing;
         }
 
-        // =============== Вспомогательные методы рефлексии ===============
+        // ===================== РЕЖИМ 2: TRUE ENDING =====================
+        private List<string> GetMissingTrueEnding(PlayerData pd)
+        {
+            List<string> missing = new List<string>();
+            // Добавьте свои пункты здесь
+            missing.Add(T("В разработке", "Soon"));
+            return missing;
+        }
+
+        // ===================== РЕЖИМ 3: 112+% =====================
+        private List<string> GetMissing112Plus(PlayerData pd)
+        {
+            List<string> missing = new List<string>();
+            // Добавьте свои пункты здесь
+            missing.Add(T("В разработке", "Soon"));
+            return missing;
+        }
+
+        // =============== Вспомогательные методы ===============
+        private string GetCharmNameRu(int id)
+        {
+            switch (id)
+            {
+                case 1: return "Загребущий рой";
+                case 2: return "Капризный компас";
+                case 3: return "Песнь гусеничек";
+                case 4: return "Крепкий панцирь";
+                case 5: return "Панцирь бальдра";
+                case 6: return "Ярость павшего";
+                case 7: return "Быстрый фокус";
+                case 8: return "Живительное сердце";
+                case 9: return "Живительное ядро";
+                case 10: return "Герб защитника";
+                case 11: return "Тремогнездо";
+                case 12: return "Колючки страданий";
+                case 13: return "Метка гордости";
+                case 14: return "Непоколебимое тело";
+                case 15: return "Тяжёлый выпад";
+                case 16: return "Пронизывающая тень";
+                case 17: return "Споровый гриб";
+                case 18: return "Длинный гвоздь";
+                case 19: return "Шаманский камень";
+                case 20: return "Ловец душ";
+                case 21: return "Пожиратель душ";
+                case 22: return "Пылающее чрево";
+                case 23: return "Хрупкое сердце";
+                case 24: return "Хрупкая жадность";
+                case 25: return "Хрупкая сила";
+                case 26: return "Ореол мастера гвоздя";
+                case 27: return "Благословение Джони";
+                case 28: return "Облик Унн";
+                case 29: return "Кровь Улья";
+                case 30: return "Повелитель грёз";
+                case 31: return "Трюкач";
+                case 32: return "Быстрый удар";
+                case 33: return "Искажатель заклинаний";
+                case 34: return "Глубокий фокус";
+                case 35: return "Элегия куколки";
+                case 36: return "Душа короля";
+                default: return "Амулет " + id;
+            }
+        }
+
+        private string GetCharmNameEn(int id)
+        {
+            switch (id)
+            {
+                case 1: return "Gathering Swarm";
+                case 2: return "Wayward Compass";
+                case 3: return "Grubsong";
+                case 4: return "Stalwart Shell";
+                case 5: return "Baldur Shell";
+                case 6: return "Fury of the Fallen";
+                case 7: return "Quick Focus";
+                case 8: return "Lifeblood Heart";
+                case 9: return "Lifeblood Core";
+                case 10: return "Defender's Crest";
+                case 11: return "Flukenest";           // Исправлено (соответствует Тремогнезду)
+                case 12: return "Thorns of Agony";
+                case 13: return "Mark of Pride";
+                case 14: return "Steady Body";
+                case 15: return "Heavy Blow";
+                case 16: return "Sharp Shadow";
+                case 17: return "Spore Shroom";
+                case 18: return "Longnail";
+                case 19: return "Shaman Stone";
+                case 20: return "Soul Catcher";
+                case 21: return "Soul Eater";
+                case 22: return "Glowing Womb";        // Исправлено (соответствует Пылающему чреву)
+                case 23: return "Fragile Heart";
+                case 24: return "Fragile Greed";
+                case 25: return "Fragile Strength";
+                case 26: return "Nailmaster's Glory";
+                case 27: return "Joni's Blessing";
+                case 28: return "Shape of Unn";
+                case 29: return "Hiveblood";
+                case 30: return "Dream Wielder";
+                case 31: return "Dashmaster";          // (Трюкач)
+                case 32: return "Quick Slash";
+                case 33: return "Spell Twister";
+                case 34: return "Deep Focus";
+                case 35: return "Grubberfly's Elegy";
+                case 36: return "Kingsoul";            // Добавлено (Душа короля)
+                case 37: return "Sprintmaster";        // (Мастер спринта)
+                case 38: return "Dreamshield";         // (Щит грез)
+                case 39: return "Carefree Melody";     // (Беспечная песнь)
+                case 40: return "Grimmchild";          // (Мрачное дитя)
+                default: return "Charm " + id;
+            }
+        }
+
         private bool ReadBoolField(PlayerData pd, string name)
         {
             FieldInfo fi = GetField(pd, name);
