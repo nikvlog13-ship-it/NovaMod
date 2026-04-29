@@ -197,7 +197,7 @@ namespace NovaMod
             if (!ReadBoolField(pd, "hasSuperDash")) missing.Add(T("Получить Кристальное сердце", "Obtain Crystal Heart"));
             if (!ReadBoolField(pd, "hasDoubleJump")) missing.Add(T("Получить Монаршие крылья", "Obtain Monarch Wings"));
             if (!ReadBoolField(pd, "hasAcidArmour")) missing.Add(T("Получить Слезу Измы", "Obtain Isma's Tear"));
-            if (!ReadBoolField(pd, "hasKingsBrand")) missing.Add(T("Получить Тавро короля", "Obtain King's Brand"));
+            if (!ReadBoolField(pd, "hasKingsBrand")) missing.Add(T("Получить Тавро Короля", "Obtain King's Brand"));
             if (!ReadBoolField(pd, "hasShadowDash")) missing.Add(T("Получить Теневой плащ", "Obtain Shade Cloak"));
             missing.Add("");
 
@@ -254,9 +254,9 @@ namespace NovaMod
 
             // Грезящие
             missing.Add(T("Грезящие:", "Dreamers:"));
-            if (!ReadBoolField(pd, "lurienDefeated")) missing.Add(T("Убить Лурьена", "Defeat Lurien"));
+            if (!ReadBoolField(pd, "lurienDefeated")) missing.Add(T("Убить Лурьен", "Defeat Lurien"));
             if (!ReadBoolField(pd, "monomonDefeated")) missing.Add(T("Убить Мономону", "Defeat Monomon"));
-            if (!ReadBoolField(pd, "hegemolDefeated")) missing.Add(T("Убить Хегемоля", "Defeat Herrah"));
+            if (!ReadBoolField(pd, "hegemolDefeated")) missing.Add(T("Убить Херру", "Defeat Herrah"));
             missing.Add("");
 
             // Колизей
@@ -369,8 +369,8 @@ namespace NovaMod
             if (!ReadBoolField(pd, "elderbugHistory3")) missing.Add(T("Старейшина: История Халлоунеста 3", "Soon"));
             if (!ReadBoolField(pd, "elderbugSpeechSly")) missing.Add(T("Старейшина: Слай", "Soon"));
             if (!ReadBoolField(pd, "elderbugSpeechStation")) missing.Add(T("Старейшина: Рогач", "Soon"));
-            if (!ReadBoolField(pd, "elderbugSpeechEggTemple")) missing.Add(T("Старейшина: История Халлоунеста 1", "Soon"));
-            if (!ReadBoolField(pd, "elderbugSpeechMapShop")) missing.Add(T("Старейшина: История Халлоунеста 1", "Soon"));
+            if (!ReadBoolField(pd, "elderbugSpeechEggTemple")) missing.Add(T("Старейшина: Храм Чёрного Яйца", "Soon"));
+            if (!ReadBoolField(pd, "elderbugSpeechMapShop")) missing.Add(T("Старейшина: Магазин карт", "Soon"));
 
             return missing;
         }
@@ -401,15 +401,15 @@ namespace NovaMod
                 case 10: return "Герб защитника";
                 case 11: return "Тремогнездо";
                 case 12: return "Колючки страданий";
-                case 13: return "Метка гордости";
+                case 13: return "Метку гордости";
                 case 14: return "Непоколебимое тело";
                 case 15: return "Тяжёлый выпад";
-                case 16: return "Пронизывающая тень";
+                case 16: return "Пронизывающую тень";
                 case 17: return "Споровый гриб";
                 case 18: return "Длинный гвоздь";
                 case 19: return "Шаманский камень";
-                case 20: return "Ловец душ";
-                case 21: return "Пожиратель душ";
+                case 20: return "Ловца душ";
+                case 21: return "Пожирателя душ";
                 case 22: return "Пылающее чрево";
                 case 23: return "Хрупкое сердце";
                 case 24: return "Хрупкую жадность";
@@ -418,7 +418,7 @@ namespace NovaMod
                 case 27: return "Благословение Джони";
                 case 28: return "Облик Унн";
                 case 29: return "Кровь Улья";
-                case 30: return "Повелитель грёз";
+                case 30: return "Повелителя грёз";
                 case 31: return "Трюкача";
                 case 32: return "Быстрый удар";
                 case 33: return "Искажателя заклинаний";
