@@ -8,7 +8,7 @@ namespace NovaMod
 {
     public class NovaMod : Mod
     {
-        public override string GetVersion() => "Beta 1.1.1";
+        public override string GetVersion() => "Beta 1.1.2";
 
         private GameObject _uiObject;
 
@@ -219,8 +219,8 @@ namespace NovaMod
             if (ReadIntField(pd, "fireballLevel") < 1) missing.Add(T("Мстительный дух", "Vengeful Spirit"));
             if (ReadIntField(pd, "fireballLevel") < 2) missing.Add(T("Теневая душа", "Shade Soul"));
             if (ReadIntField(pd, "quakeLevel") < 1) missing.Add(T("Опустошающее пике", "Desolate Dive"));
-            if (ReadIntField(pd, "quakeLevel") < 2) missing.Add(T("Нисхождение тьмы", "Descending Dark"));
-            if (ReadIntField(pd, "screamLevel") < 1) missing.Add(T("Воющие призраки", "Howling Wraiths"));
+            if (ReadIntField(pd, "quakeLevel") < 2) missing.Add(T("Нисходящая тьма", "Descending Dark"));
+            if (ReadIntField(pd, "screamLevel") < 1) missing.Add(T("Воющие духи", "Howling Wraiths"));
             if (ReadIntField(pd, "screamLevel") < 2) missing.Add(T("Вопль бездны", "Abyss Shriek"));
             missing.Add("");
 
@@ -237,7 +237,7 @@ namespace NovaMod
             // Гвоздь Грёз
             missing.Add(T("Гвоздь грёз:", "Dream Nail:"));
             if (!ReadBoolField(pd, "hasDreamNail")) missing.Add(T("Получить Гвоздь Грёз", "Obtain Dream Nail"));
-            if (!ReadBoolField(pd, "dreamNailUpgraded")) missing.Add(T("Улучшить Гвоздь Грёз", "Upgrade Dream Nail"));
+            if (!ReadBoolField(pd, "dreamNailUpgraded")) missing.Add(T("Пробуждение Гвоздя Грёз", "Upgrade Dream Nail"));
             if (!ReadBoolField(pd, "mothDeparted")) missing.Add(T("Последние слова Провидицы", "Seer's final words"));
             missing.Add("");
 
@@ -302,6 +302,67 @@ namespace NovaMod
             List<string> missing = new List<string>();
             // Добавьте свои пункты здесь
             missing.Add(T("В разработке", "Soon"));
+
+            int health = ReadIntField(pd, "maxHealth");
+            int health_pieces = ReadIntField(pd, "heartPieces");
+            if (health < 9) missing.Add(T($"Осколки масок: {(health - 5) * 4+health_pieces}/16", "Soon"));
+
+            int vessel = ReadIntField(pd, "MPReserveMax");
+            int vessel_fragments = ReadIntField(pd, "vesselFragment");
+            if (vessel < 99) missing.Add(T($"Осколки масок: {vessel/33 + vessel_fragments}/9", "Soon"));
+
+            if (!ReadBoolField(pd, "hasSpell")) missing.Add(T("Заклинание", "Soon"));
+            if (ReadIntField(pd, "fireballLevel") < 1) missing.Add(T("Мстительный дух", "Soon"));
+            if (ReadIntField(pd, "fireballLevel") < 2) missing.Add(T("Теневая душа", "Soon"));
+            if (ReadIntField(pd, "quakeLevel") < 1) missing.Add(T("Опустошающее пике", "Soon"));
+            if (ReadIntField(pd, "quakeLevel") < 2) missing.Add(T("Нисходящая тьма", "Soon"));
+            if (ReadIntField(pd, "screamLevel") < 1) missing.Add(T("Воющие духи", "Soon"));
+            if (ReadIntField(pd, "screamLevel") < 2) missing.Add(T("Вопль бездны", "Soon"));
+
+            if (!ReadBoolField(pd, "hasNailArt")) missing.Add(T("Техника гвоздя", "Soon"));
+            if (!ReadBoolField(pd, "hasCyclone")) missing.Add(T("Ураганный удар", "Soon"));
+            if (!ReadBoolField(pd, "hasDashSlash")) missing.Add(T("Рассекающий удар", "Soon"));
+            if (!ReadBoolField(pd, "hasUpwardSlash")) missing.Add(T("Великий удар", "Soon"));
+            if (!ReadBoolField(pd, "hasAllNailArts")) missing.Add(T("Все техники гвоздя", "Soon"));
+
+            if (!ReadBoolField(pd, "hasDreamNail")) missing.Add(T("Гвоздь грёз", "Soon"));
+            if (!ReadBoolField(pd, "hasDreamGate")) missing.Add(T("Врата грёз", "Soon"));
+            if (!ReadBoolField(pd, "dreamNailUpgraded")) missing.Add(T("Пробуждение гвоздя грёз", "Soon"));
+
+            if (!ReadBoolField(pd, "hasDash")) missing.Add(T("Накидка мотылька", "Soon"));
+            if (!ReadBoolField(pd, "hasWalljump")) missing.Add(T("Клещня богомола", "Soon"));
+            if (!ReadBoolField(pd, "hasSuperDash")) missing.Add(T("Кристальное сердце", "Soon"));
+            if (!ReadBoolField(pd, "hasShadowDash")) missing.Add(T("Теневой плащ", "Soon"));
+            if (!ReadBoolField(pd, "hasAcidArmour")) missing.Add(T("Слеза Измы", "Soon"));
+            if (!ReadBoolField(pd, "hasDoubleJump")) missing.Add(T("Монаршие крылья", "Soon"));
+
+            if (!ReadBoolField(pd, "hasLantern")) missing.Add(T("Светомуший фонарь", "Soon"));
+            if (!ReadBoolField(pd, "hasTramPass")) missing.Add(T("Проездной", "Soon"));
+            if (!ReadBoolField(pd, "hasQuill")) missing.Add(T("Перо", "Soon"));
+            if (!ReadBoolField(pd, "hasSlykey") & !ReadBoolField(pd, "gaveSlykey")) missing.Add(T("Ключ лавочника", "Soon"));
+            if (ReadBoolField(pd, "hasSlykey") & !ReadBoolField(pd, "gaveSlykey")) missing.Add(T("Отдать Ключ лавочника", "Soon"));
+            if (!ReadBoolField(pd, "hasWhiteKey")) missing.Add(T("Элегантный ключ", "Soon"));
+            if (!ReadBoolField(pd, "usedWhiteKey")) missing.Add(T("Использовать Элегантный ключ", "Soon"));
+            if (!ReadBoolField(pd, "hasMenderKey")) missing.Add(T("Ключ Починочного Жука", "Soon"));
+            if (!ReadBoolField(pd, "hasKingsBrand")) missing.Add(T("Тавро Короля", "Soon"));
+
+            if (!ReadBoolField(pd, "foundTrinket1")) missing.Add(T("Дневник странника", "Soon"));
+            if (!ReadBoolField(pd, "foundTrinket2")) missing.Add(T("Печать Халлоунеста", "Soon"));
+            if (!ReadBoolField(pd, "foundTrinket3")) missing.Add(T("Идол Короля", "Soon"));
+            if (!ReadBoolField(pd, "foundTrinket4")) missing.Add(T("Загадочное яйцо", "Soon"));
+            if (ReadIntField(pd, "soldTrinket1") < 15) missing.Add(T("Все Дневники странников", "Soon"));
+            if (ReadIntField(pd, "soldTrinket2") < 15) missing.Add(T("Все Печати Халлоунеста", "Soon"));
+            if (ReadIntField(pd, "soldTrinket3") < 7) missing.Add(T("Все Идолы Короля", "Soon"));
+            if (ReadIntField(pd, "soldTrinket4") < 3) missing.Add(T("Все Загадочные яйца", "Soon"));
+            if (ReadIntField(pd, "rancidEggs") < 1) missing.Add(T("Тухлое яйцо", "Soon"));
+            if (ReadIntField(pd, "rancidEggs") < 80) missing.Add(T("Все Тухлые яйца (80)", "Soon"));
+            if (!ReadBoolField(pd, "gotLurkerKey")) missing.Add(T("Бледный соглядатай", "Soon"));
+
+            if (ReadIntField(pd, "guardiansDefeated") < 3) missing.Add(T("Все Грезящие", "Soon"));
+            if (!ReadBoolField(pd, "lurienDefeated")) missing.Add(T("Убить Лурьен", "Soon"));
+            if (!ReadBoolField(pd, "hegemolDefeated")) missing.Add(T("Убить Хегемоль", "Soon"));
+            if (!ReadBoolField(pd, "monomonDefeated")) missing.Add(T("Убить Мономону", "Soon"));
+
             return missing;
         }
 
@@ -342,19 +403,19 @@ namespace NovaMod
                 case 21: return "Пожиратель душ";
                 case 22: return "Пылающее чрево";
                 case 23: return "Хрупкое сердце";
-                case 24: return "Хрупкая жадность";
-                case 25: return "Хрупкая сила";
+                case 24: return "Хрупкую жадность";
+                case 25: return "Хрупкую сила";
                 case 26: return "Ореол мастера гвоздя";
                 case 27: return "Благословение Джони";
                 case 28: return "Облик Унн";
                 case 29: return "Кровь Улья";
                 case 30: return "Повелитель грёз";
-                case 31: return "Трюкач";
+                case 31: return "Трюкача";
                 case 32: return "Быстрый удар";
-                case 33: return "Искажатель заклинаний";
+                case 33: return "Искажателя заклинаний";
                 case 34: return "Глубокий фокус";
-                case 35: return "Элегия куколки";
-                case 36: return "Душа короля";
+                case 35: return "Элегию куколки";
+                case 36: return "Душу короля";
                 default: return "Амулет " + id;
             }
         }
@@ -399,10 +460,6 @@ namespace NovaMod
                 case 34: return "Deep Focus";
                 case 35: return "Grubberfly's Elegy";
                 case 36: return "Kingsoul";            // Добавлено (Душа короля)
-                case 37: return "Sprintmaster";        // (Мастер спринта)
-                case 38: return "Dreamshield";         // (Щит грез)
-                case 39: return "Carefree Melody";     // (Беспечная песнь)
-                case 40: return "Grimmchild";          // (Мрачное дитя)
                 default: return "Charm " + id;
             }
         }
