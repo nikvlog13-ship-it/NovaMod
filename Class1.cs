@@ -363,6 +363,15 @@ namespace NovaMod
             if (!ReadBoolField(pd, "hegemolDefeated")) missing.Add(T("Убить Хегемоль", "Soon"));
             if (!ReadBoolField(pd, "monomonDefeated")) missing.Add(T("Убить Мономону", "Soon"));
 
+            if (!ReadBoolField(pd, "metElderbug")) missing.Add(T("Встретить Старейшину", "Soon"));
+            if (!ReadBoolField(pd, "elderbugHistory1")) missing.Add(T("Старейшина: История Халлоунеста 1", "Soon"));
+            if (!ReadBoolField(pd, "elderbugHistory2")) missing.Add(T("Старейшина: История Халлоунеста 2", "Soon"));
+            if (!ReadBoolField(pd, "elderbugHistory3")) missing.Add(T("Старейшина: История Халлоунеста 3", "Soon"));
+            if (!ReadBoolField(pd, "elderbugSpeechSly")) missing.Add(T("Старейшина: Слай", "Soon"));
+            if (!ReadBoolField(pd, "elderbugSpeechStation")) missing.Add(T("Старейшина: Рогач", "Soon"));
+            if (!ReadBoolField(pd, "elderbugSpeechEggTemple")) missing.Add(T("Старейшина: История Халлоунеста 1", "Soon"));
+            if (!ReadBoolField(pd, "elderbugSpeechMapShop")) missing.Add(T("Старейшина: История Халлоунеста 1", "Soon"));
+
             return missing;
         }
 
